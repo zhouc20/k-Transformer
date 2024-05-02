@@ -10,9 +10,11 @@ We implement 2-transformers with full attention ($\mathcal A_2$), kernelized att
 
 ### Python environment setup with Conda
 
+We build our code based on [GraphGPS](https://github.com/rampasek/GraphGPS) with many improvements.
+
 ```bash
-conda create -n exphormer python=3.9
-conda activate exphormer
+conda create -n kTransformer python=3.9
+conda activate kTransformer
 
 conda install pytorch=1.10 torchvision torchaudio -c pytorch -c nvidia
 conda install pyg=2.0.4 -c pyg -c conda-forge
@@ -30,16 +32,19 @@ conda clean --all
 ```
 
 
-### Running Exphormer
+### Running k-Transformer
 
 ```bash
-conda activate exphormer
+conda activate kTransformer
 
-# Running Exphormer for LRGB Datasets
-python main.py --cfg configs/Exphormer_LRGB/peptides-struct-EX.yaml  wandb.use False
+# Running k-Transformer for real-world datasets 
+python main.py --cfg configs/k-transformer/zinc-2Transformer-LocalNgbh_VT_6+RWSE.yaml  wandb.use False
 
-# Running Exphormer for Cifar10
-python main.py --cfg configs/Exphormer/cifar10.yaml  wandb.use False
+# Running k-Transformer for structure awareness on synthetic datasets
+python main.py --cfg configs/StructuralAwareness/csl-2Transformer_LN.yaml wandb.use False
+
+# Running k-Transformer for substructure counting
+python train_count_substructure.py --cfg configs/StructuralAwareness/Count-2Transformer_LN_triangle.yaml wandb.use False
 ```
 
 You can also set your wandb settings and use wandb.
