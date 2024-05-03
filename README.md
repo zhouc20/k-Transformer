@@ -1,6 +1,6 @@
 # k-Transformer
 
-Official code repo for AISTATS 2024 paper: On the Theoretical Expressive Power and Design Space of High-Order Graph Transformers. Paper: https://proceedings.mlr.press/v238/zhou24a.html
+Official code repository for AISTATS 2024 paper: On the Theoretical Expressive Power and Design Space of High-Order Graph Transformers. Paper: https://proceedings.mlr.press/v238/zhou24a.html
 
 ![k-Transformer](./k-Transformer.png)
 
@@ -150,7 +150,9 @@ prep:
     # You can also change exp_deg and exp_algorithm
 
 # positional and structural encodings
-# our models supports a variety of PEs and SEs: we consider the PEs and SEs in GraphGPS, as well as Hodge1Lap and EdgeRWSE in Facilitating Graph Neural Networks with Random Walk on Simplicial Complexes (https://proceedings.neurips.cc/paper_files/paper/2023/hash/345208bdbbb6104616311dfc1d093fe7-Abstract-Conference.html)
+# our models supports a variety of PEs and SEs: we consider the PEs and SEs in GraphGPS, as well as Hodge1Lap and EdgeRWSE in the paper
+# Facilitating Graph Neural Networks with Random Walk on Simplicial Complexes
+# (see https://proceedings.neurips.cc/paper_files/paper/2023/hash/345208bdbbb6104616311dfc1d093fe7-Abstract-Conference.html)
 
 ```
 
