@@ -57,7 +57,7 @@ Most of the configs are shared with [GraphGPS](https://github.com/rampasek/Graph
 # sepcify order of tuple-based $k$-transformer
 model:
   type: kTransformer
-  k: 2  # high-order cases include 2 and 3
+  k: 2  # high-order cases include 2 and 3 (default: 2)
 
 # full attention ($\mathcal A_k$)
 model:
@@ -148,6 +148,10 @@ prep:
     # You should also set use_exp_edges to True.
     # Otherwise expander graphs will be calculated but not used in the Exphormer.
     # You can also change exp_deg and exp_algorithm
+
+# positional and structural encodings
+# our models supports a variety of PEs and SEs: we consider the PEs and SEs in GraphGPS, as well as Hodge1Lap and EdgeRWSE in Facilitating Graph Neural Networks with Random Walk on Simplicial Complexes (https://proceedings.neurips.cc/paper_files/paper/2023/hash/345208bdbbb6104616311dfc1d093fe7-Abstract-Conference.html)
+
 ```
 
 
