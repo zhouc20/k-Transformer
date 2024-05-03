@@ -54,38 +54,100 @@ You can also set your wandb settings and use wandb.
 Most of the configs are shared with [GraphGPS](https://github.com/rampasek/GraphGPS) code. Since this is a theoretical focused work, we do not perform much hyper-parameter search. Even so, our models achieve highly competitive results across many tasks on both synthetic and real-world datasets. You can change the hyper-parameters in the config files for different variants of our models and different settings:
 
 ```
-# full attention ($\mathcal A_2$)
+# sepcify order of tuple-based $k$-transformer
+model:
+  type: kTransformer
+  k: 2  # high-order cases include 2 and 3
 
-# kernelized attention ($\mathcal A_2-Performer$)
+# full attention ($\mathcal A_k$)
+model:
+  type: kTransformer
+prep:
+  use_local_neighbors: False
+gt:
+  layer_type: None+Transformer
 
-# neighbor attention ($\mathcal A_k^{\mathsf{Ngbh}}$ and $\mathcal A_k^{\mathsf{Ngbh+}}$)
+# kernelized attention ($\mathcal A_k-Performer$)
+model:
+  type: kTransformer
+prep:
+  use_local_neighbors: False
+gt:
+  layer_type: None+Performer
+
+# neighbor attention ($\mathcal A_k^{\mathsf{Ngbh}}$) 
+model:
+  type: kTransformer
+prep:
+  use_local_neighbors: True
+  use_global_neighbors: True
+  use_global_neighbors_delta: False  # default is False
+gt:
+  layer_type: None+Exphormer
+
+# neighbor-plus attention ($\mathcal A_k^{\mathsf{Ngbh+}}$)
+model:
+  type: kTransformer
+prep:
+  use_local_neighbors: True
+  use_global_neighbors: False  # default is False
+  use_global_neighbors_delta: True
+gt:
+  layer_type: None+Exphormer
 
 # local neighbor attention ($\mathcal A_k^{\mathsf{LN}}$)
-
-# Virtual entities: include virtual tuple atention $\mathcal A_k^{\mathsf{VT}}$ and virtual simplex attention $\mathcal{AS}_{0:2}^{\mathsf{VS}}$.
+model:
+  type: kTransformer
 prep:
-  num_virt_node: 1 # Set the number of virtual entities, including virtual tuples and virtual simplexes nodes 
-    # Otherwise set 0 if you do not want to use.
-    # Only supports sparse versions of tuple/simplicial transformers, i.e. cfg.model.type in ['kTransformer', 'kSimplicialTransformerSparse'] and cfg.gt.layer_type == 'Exphormer'
+  use_local_neighbors: True
+  use_global_neighbors: False  # default is False
+  use_global_neighbors_delta: False  # default is False
+gt:
+  layer_type: None+Exphormer
 
+# virtual entities: include virtual tuple atention $\mathcal A_k^{\mathsf{VT}}$ and virtual simplex attention $\mathcal{AS}_{0:K}^{\mathsf{VS}}$.
+# could be combined with other types of sparse attention
+# only supports sparse versions of tuple/simplicial transformers, i.e. cfg.model.type in ['kTransformer', 'kSimplicialTransformerSparse'] and cfg.gt.layer_type == 'Exphormer'
+prep:
+  num_virt_node: 1 # set the number of virtual entities, including virtual tuples and virtual simplexes
+                   # otherwise set 0 if you do not want to use.
+model:
+  type: kTransformer # assert type in ['kTransformer', 'kSimplicialTransformerSparse']
+gt:
+  layer_type: None+Exphormer
+    
 # cross attention between $1$-tuples and $2$-tuples
+model:
+  type: TensorizedTransformer
+  local: True  # set to False if you use global attention
+prep:
+  use_local_neighbors: False
+gt:
+  layer_type: None+Tensorized_12_Layer
 
 # simplicial transformers
-# dense simpliical attention for order- $0,1,2$ simplices ($\mathcal{AS}_ {0:2}$) which could use Hodge Laplacians as attention biases
-
-# sparse simplicial attention with simplex neighbor attention ($\mathcal{AS}_ {0:2}^{\mathsf{SN}}$) and virtual simplex attention.
-
-
-
+# dense simpliical attention ($\mathcal{AS}_ {0:2}$) which could use Hodge Laplacians as attention biases
+model:
+  type: kSimplicialTransformerDense
+gt:
+  layer_type: None+Transformer
 prep:
-  exp: True  # Set True for using expander edges introduced in Exphormer paper (not our focus). 
+  use_local_neighbors: True  # set to True if you want to use Hodge Laplacian as attention bias, and False otherwise
+
+# sparse simplicial attention with simplex neighbor attention ($\mathcal{AS}_ {0:2}^{\mathsf{SN}}$)
+model:
+  type: kSimplicialTransformerSparse
+gt:
+  layer_type: None+Exphormer
+prep:
+  use_local_neighbors: True  # set to True to use local attention (only consider boundaries, co-boundaries, lower-adjacent simplices and upper-adjacent simplices
+
+# optional expander edges introduced in Exphormer paper (not our focus). 
+prep:
+  exp: True  # Set True for using expander edges 
     # You should also set use_exp_edges to True.
     # Otherwise expander graphs will be calculated but not used in the Exphormer.
     # You can also change exp_deg and exp_algorithm
-  num_virt_node: 1 # Set the number of virtual entities, including virtual tuples and virtual simplexes nodes 
-    # Otherwise set 0 if you do not want to use.
-    # Only supports sparse versions of tuple/simplicial transformers, i.e. cfg.model.type in ['kTransformer', 'kSimplicialTransformerSparse'] and cfg.gt.layer_type == 'Exphormer'
-
 ```
 
 
