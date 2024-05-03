@@ -138,6 +138,7 @@ prep:
 # sparse simplicial attention with simplex neighbor attention ($\mathcal{AS}_ {0:2}^{\mathsf{SN}}$)
 model:
   type: kSimplicialTransformerSparse
+  simplex_pooling: all  # default: 'all', pooling over both 0-simplices and 1-sipmlices; alternative: 'node', pooling over only 0-simplices
 gt:
   layer_type: None+Exphormer
 prep:
