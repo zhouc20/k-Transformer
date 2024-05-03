@@ -51,21 +51,18 @@ You can also set your wandb settings and use wandb.
 
 ### Guide on configs files
 
-Most of the configs are shared with [GraphGPS](https://github.com/rampasek/GraphGPS) code. You can change the following parameters in the config files for different parameters and variants of the Exphormer:
+Most of the configs are shared with [GraphGPS](https://github.com/rampasek/GraphGPS) code. Since this is a theoretical focused work, we do not perform much hyper-parameter search. Even so, our models achieve highly competitive results across many tasks on both synthetic and real-world datasets. You can change the hyper-parameters in the config files for different variants of our models and different settings:
 
 ```
 prep:
-  exp: True  # Set True for using expander graphs, set False otherwise. 
-    # Alternatively you can set use_exp_edges to False.
-    # In this case expander graphs will be calculated but not used in the Exphormer. 
-  exp_deg: 5 # Set the degree of the expander graph.
-    # Please note that if you set this to d, the algorithm will use d permutations 
-    # or d Hamiltonian cycles, so the actual degree of the expander graph will be 2d
-  exp_algorithm: 'Random-d' # Options are ['Random-d', 'Random-d2', 'Hamiltonian].
-    # Default value is 'Random-d'
-  add_edge_index: True # Set True if you want to add real edges beside expander edges
-  num_virt_node: 1 # Set 0 for not using virtual nodes 
-    # otherwise set the number of virtual nodes you want to use.
+  exp: True  # Set True for using expander edges introduced in Exphormer paper (not our focus). 
+    # You should also set use_exp_edges to True.
+    # Otherwise expander graphs will be calculated but not used in the Exphormer.
+    # You can also change exp_deg and exp_algorithm
+  num_virt_node: 1 # Set the number of virtual entities, including virtual tuples and virtual simplexes nodes 
+    # Otherwise set 0 if you do not want to use.
+    # Only supports sparse versions of tuple/simplicial transformers, i.e. cfg.model.type in ['kTransformer', 'kSimplicialTransformerSparse'] and cfg.gt.layer_type == 'Exphormer'
+
 ```
 
 
