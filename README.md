@@ -119,11 +119,12 @@ gt:
 # cross attention between $1$-tuples and $2$-tuples
 model:
   type: TensorizedTransformer
-  local: True  # set to False if you use global attention
+  local: True  # set to False if you use global attention, where each 1-tuple computes attention with all 2-tuples
 prep:
   use_local_neighbors: False
 gt:
   layer_type: None+Tensorized_12_Layer
+  update_e: False  # set to True if you want to update the representations of 2-tuples; otherwise, only update the representations of 1-tuples
 
 # simplicial transformers
 # dense simpliical attention ($\mathcal{AS}_ {0:2}$) which could use Hodge Laplacians as attention biases
