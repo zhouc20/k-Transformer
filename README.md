@@ -37,14 +37,17 @@ conda clean --all
 ```bash
 conda activate kTransformer
 
+# Some examples to run experiments; change the configs files to run the desired experiments
+
 # Running k-Transformer for real-world datasets 
-python main.py --cfg configs/k-transformer/zinc-2Transformer-LocalNgbh_VT_6+RWSE.yaml  wandb.use False
+python main.py --cfg configs/k-transformer/alchemy-2Transformer-LocalNgbh_VT_6+RWSE+StableExpPE_MLP_12+EdgeRWSE.yaml  wandb.use False
+python main.py --cfg configs/k-transformer/zinc-01SimplicialTransformer-SimplexNgbh_VT_1+RWSE.yaml  wandb.use False
 
 # Running k-Transformer for structure awareness on synthetic datasets
-python main.py --cfg configs/StructuralAwareness/csl-2Transformer_LN.yaml wandb.use False
+python main.py --cfg configs/k-transformer-StructuralAwareness/csl-2Transformer_LN.yaml  wandb.use False
 
 # Running k-Transformer for substructure counting
-python train_count_substructure.py --cfg configs/StructuralAwareness/Count-2Transformer_LN_triangle.yaml wandb.use False
+python train_count_substructure.py --cfg configs/k-transformer-StructuralAwareness/Count-2Transformer_LN_triangle.yaml  wandb.use False
 ```
 
 You can also set your wandb settings and use wandb.
