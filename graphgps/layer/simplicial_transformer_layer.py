@@ -31,8 +31,7 @@ class Simplicial_01_dense_Layer(nn.Module):
                  pna_degrees=None, equivstable_pe=False, dropout=0.0,
                  attn_dropout=0.0, layer_norm=False, batch_norm=True,
                  bigbird_cfg=None, exp_edges_cfg=None, log_attn_weights=False, num_layer_MPNN=1, similarity_type='cos',
-                 inference_mode='original', mp_threshold=0.0, force_undirected=False, complex_type='original',
-                 complex_pool_type='add', cluster_threshold=0.1, complex_max_distance=5, focusing_factor=1):
+                 inference_mode='original', mp_threshold=0.0, force_undirected=False, focusing_factor=1, **kwargs):
         super().__init__()
 
         self.dim_h = dim_h
@@ -307,9 +306,8 @@ class Simplicial_01_sparse_Layer(nn.Module):
                  local_gnn_type, global_model_type, num_heads, act='relu',
                  pna_degrees=None, equivstable_pe=False, dropout=0.0,
                  attn_dropout=0.0, layer_norm=False, batch_norm=True,
-                 bigbird_cfg=None, exp_edges_cfg=None, log_attn_weights=False, num_layer_MPNN=1, similarity_type='cos',
-                 inference_mode='original', mp_threshold=0.0, force_undirected=False, complex_type='original',
-                 complex_pool_type='add', cluster_threshold=0.1, complex_max_distance=5, focusing_factor=1):
+                 bigbird_cfg=None, exp_edges_cfg=None, log_attn_weights=False, similarity_type='cos',
+                 inference_mode='original', mp_threshold=0.0, force_undirected=False, **kwargs):
         super().__init__()
 
         self.dim_h = dim_h
@@ -319,7 +317,6 @@ class Simplicial_01_sparse_Layer(nn.Module):
         self.batch_norm = batch_norm
         self.equivstable_pe = equivstable_pe
         self.activation = register.act_dict[act]
-        self.num_layer_MPNN = num_layer_MPNN
         self.similarity_type = similarity_type
         self.inference_mode = inference_mode
         self.force_undirected = force_undirected

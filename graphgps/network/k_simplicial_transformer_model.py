@@ -178,12 +178,7 @@ class kSimplicialTransformerModelSparse(torch.nn.Module):
                 bigbird_cfg=cfg.gt.bigbird,
                 exp_edges_cfg=cfg.prep,
                 log_attn_weights=cfg.train.mode == 'log-attn-weights',
-                num_layer_MPNN=cfg.gnn.num_layer_MPNN,
-                similarity_type=cfg.gnn.similarity_type,
-                inference_mode=cfg.gnn.inference_mode,
-                mp_threshold=cfg.gnn.mp_threshold,
-                force_undirected=cfg.gnn.force_undirected,
-                focusing_factor=cfg.gt.focusing_factor
+                focusing_factor=cfg.gt.get('focusing_factor', 1.)
             ))
         self.layers = torch.nn.Sequential(*layers)
 

@@ -25,9 +25,7 @@ class k_Transformer_Layer(nn.Module):
                  local_gnn_type, global_model_type, num_heads, act='relu',
                  pna_degrees=None, equivstable_pe=False, dropout=0.0,
                  attn_dropout=0.0, layer_norm=False, batch_norm=True,
-                 bigbird_cfg=None, exp_edges_cfg=None, log_attn_weights=False, num_layer_MPNN=1, similarity_type='cos',
-                 inference_mode='original', mp_threshold=0.0, force_undirected=False, complex_type='original',
-                 complex_pool_type='add', cluster_threshold=0.1, complex_max_distance=5, focusing_factor=1):
+                 bigbird_cfg=None, exp_edges_cfg=None, log_attn_weights=False, focusing_factor=1):
         super().__init__()
 
         self.dim_h = dim_h
@@ -37,11 +35,6 @@ class k_Transformer_Layer(nn.Module):
         self.batch_norm = batch_norm
         self.equivstable_pe = equivstable_pe
         self.activation = register.act_dict[act]
-        self.num_layer_MPNN = num_layer_MPNN
-        self.similarity_type = similarity_type
-        self.inference_mode = inference_mode
-        self.force_undirected = force_undirected
-        self.mp_threshold = mp_threshold
 
         self.log_attn_weights = log_attn_weights
         if log_attn_weights and global_model_type != 'Transformer':
@@ -49,41 +42,22 @@ class k_Transformer_Layer(nn.Module):
                 "Logging of attention weights is only supported for "
                 "Transformer global attention model."
             )
-        if global_model_type == 'GINE_RW':
-            self.inference_mode = 'original'
 
         # Local message-passing model.
         if local_gnn_type == 'None':
             self.local_model = None
         elif local_gnn_type == 'GENConv':
             self.local_model = pygnn.GENConv(dim_h, dim_h)
-            if self.inference_mode in ['inter_intra', 'original_inter']:
-                self.local_model_intra = pygnn.GENConv(dim_h, dim_h)
         elif local_gnn_type == 'GINE':
             gin_nn = nn.Sequential(Linear_pyg(dim_h, dim_h),
                                    self.activation(),
                                    Linear_pyg(dim_h, dim_h))
             if self.equivstable_pe:  # Use specialised GINE layer for EquivStableLapPE.
                 self.local_model = GINEConvESLapPE(gin_nn)
-                if self.inference_mode in ['inter_intra', 'original_inter']:
-                    gin_nn_intra = nn.Sequential(Linear_pyg(dim_h, dim_h),
-                                           self.activation(),
-                                           Linear_pyg(dim_h, dim_h))
-                    self.local_model_intra = GINEConvESLapPE(gin_nn_intra)
             else:
                 self.local_model = pygnn.GINEConv(gin_nn)
-                if self.inference_mode in ['inter_intra', 'original_inter']:
-                    gin_nn_intra = nn.Sequential(Linear_pyg(dim_h, dim_h),
-                                                 self.activation(),
-                                                 Linear_pyg(dim_h, dim_h))
-                    self.local_model_intra = pygnn.GINEConv(gin_nn_intra)
         elif local_gnn_type == 'GAT':
             self.local_model = pygnn.GATConv(in_channels=dim_h,
-                                             out_channels=dim_h // num_heads,
-                                             heads=num_heads,
-                                             edge_dim=dim_h)
-            if self.inference_mode in ['inter_intra', 'original_inter']:
-                self.local_model_intra = pygnn.GATConv(in_channels=dim_h,
                                              out_channels=dim_h // num_heads,
                                              heads=num_heads,
                                              edge_dim=dim_h)
@@ -103,37 +77,12 @@ class k_Transformer_Layer(nn.Module):
                                              pre_layers=1,
                                              post_layers=1,
                                              divide_input=False)
-            if self.inference_mode in ['inter_intra', 'original_inter']:
-                self.local_model_intra = pygnn.PNAConv(dim_h, dim_h,
-                                             aggregators=aggregators,
-                                             scalers=scalers,
-                                             deg=deg,
-                                             edge_dim=min(128, dim_h),
-                                             towers=1,
-                                             pre_layers=1,
-                                             post_layers=1,
-                                             divide_input=False)
         elif local_gnn_type == 'CustomGatedGCN':
             self.local_model = GatedGCNLayer(dim_h, dim_h,
                                              dropout=dropout,
                                              residual=True,
                                              act=act,
                                              equivstable_pe=equivstable_pe)
-            if self.inference_mode in ['inter_intra', 'original_inter']:
-                self.local_model_intra = GatedGCNLayer(dim_h, dim_h,
-                                             dropout=dropout,
-                                             residual=True,
-                                             act=act,
-                                             equivstable_pe=equivstable_pe)
-        elif local_gnn_type == 'GINE_RW':
-            gin_nn = nn.ModuleList([nn.Sequential(Linear_pyg(dim_h, dim_h),
-                                   self.activation(),
-                                   Linear_pyg(dim_h, dim_h)) for _ in range(num_layer_MPNN)])
-            gin_nn_2 = nn.ModuleList([nn.Sequential(Linear_pyg(dim_h, dim_h),
-                                                  self.activation(),
-                                                  Linear_pyg(dim_h, dim_h)) for _ in range(num_layer_MPNN)])
-            self.local_model = RW_MPNN_layer(gin_nn, gin_nn_2, num_layer_MPNN, similarity_type, inference_mode, mp_threshold, force_undirected)
-
         else:
             raise ValueError(f"Unsupported local GNN model: {local_gnn_type}")
         self.local_gnn_type = local_gnn_type
@@ -141,14 +90,6 @@ class k_Transformer_Layer(nn.Module):
         # Global attention transformer-style model.
         if global_model_type == 'None':
             self.self_attn = None
-        elif global_model_type == 'GINE_RW':
-            gin_nn = nn.ModuleList([nn.Sequential(Linear_pyg(dim_h, dim_h),
-                                   self.activation(),
-                                   Linear_pyg(dim_h, dim_h)) for _ in range(num_layer_MPNN)])
-            gin_nn_2 = nn.ModuleList([nn.Sequential(Linear_pyg(dim_h, dim_h),
-                                                    self.activation(),
-                                                    Linear_pyg(dim_h, dim_h)) for _ in range(num_layer_MPNN)])
-            self.self_attn = RW_MPNN_layer(gin_nn, gin_nn_2, num_layer_MPNN, similarity_type, inference_mode, mp_threshold, force_undirected)
 
         elif global_model_type == 'Transformer':
             self.self_attn = torch.nn.MultiheadAttention(
@@ -157,10 +98,6 @@ class k_Transformer_Layer(nn.Module):
             #     d_model=dim_h, nhead=num_heads,
             #     dim_feedforward=2048, dropout=0.1, activation=F.relu,
             #     layer_norm_eps=1e-5, batch_first=True)
-        elif global_model_type == 'RW_Transformer':
-            self.self_attn = RW_Transformer_layer(dim_h, num_heads, self.attn_dropout, complex_type,
-                                                  similarity_type, complex_pool_type, force_undirected,
-                                                  cluster_threshold, complex_max_distance)
         elif global_model_type == 'Performer':
             self.self_attn = SelfAttention(
                 dim=dim_h, heads=num_heads, generalized_attention=True,
@@ -229,8 +166,6 @@ class k_Transformer_Layer(nn.Module):
             h_dense, mask = to_dense_batch(h, batch.batch_tuple)
             if self.global_model_type == 'Transformer':
                 h_attn = self._sa_block(h_dense, None, ~mask)[mask]
-            elif self.global_model_type == 'GINE_RW':
-                h_attn = self.self_attn(h, batch.edge_index, batch.edge_attr)
             elif self.global_model_type == 'Performer':
                 h_attn = self.self_attn(h_dense, mask=mask)[mask]
             elif self.global_model_type == 'BigBird':
