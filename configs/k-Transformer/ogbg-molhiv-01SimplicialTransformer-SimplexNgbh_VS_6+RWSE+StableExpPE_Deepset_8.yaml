@@ -1,0 +1,111 @@
+out_dir: results
+metric_best: auc
+accelerator: 'cuda:0'
+wandb:
+  use: True
+  project: molhiv
+dataset:
+  format: OGB
+  name: ogbg-molhiv
+  task: graph
+  task_type: classification
+  transductive: False
+  node_encoder: True
+  node_encoder_name: Atom+StableExpressivePE+RWSE
+  node_encoder_bn: False
+  edge_encoder: True
+  edge_encoder_name: Bond_custom
+  edge_encoder_bn: False
+  max_degree: 20
+prep:
+  exp: False
+  exp_deg: 3
+  use_exp_edges: False
+  add_edge_index: False # Set True if you want to add real edges beside expander edges
+  use_local_neighbors: True # Set True if you want to use local neighbor attention
+  num_virt_node: 6 # Set True if you want to add global node connections beside expander edges
+posenc_StableExpressivePE:
+  enable: True
+  model: DeepSet
+  dim_pe: 8
+  n_psi: 6
+  layers: 4
+  post_layers: 8
+  eigen:
+    max_freqs: 8
+  pass_as_var: True
+  psi_hidden_dim: 16
+  phi_hidden_dim: 64
+  phi_out_dim: 8
+posenc_RWSE:
+  enable: True
+  kernel:
+    times_func: range(1,17)
+  model: Linear
+  dim_pe: 16
+  raw_norm_type: BatchNorm
+posenc_EdgeRWSE:
+  enable: False
+  kernel:
+    times_func: range(1, 17)
+  model: Linear
+  layers: 1
+  bias: True
+  dim_pe: 16
+  directed_walk: False
+  internal_directed: False
+train:
+  mode: custom
+  batch_size: 32
+  eval_period: 1
+  ckpt_period: 100
+  ensemble_repeat: 1
+  ensemble_mode: none
+model:
+  type: kSimplicialTransformerSparse
+  loss_fun: cross_entropy
+  edge_decoding: dot
+  graph_pooling: mean
+  simplex_pooling: all  # pool over all simplices; change to node if you want to only pool over 0-simplices
+gt:
+  layer_type: None+Exphormer
+  layers: 10
+  n_heads: 4
+  dim_hidden: 64  # `gt.dim_hidden` must match `gnn.dim_inner`
+  dropout: 0.1
+  attn_dropout: 0.5
+  layer_norm: False
+  batch_norm: True
+gnn:
+  head: san_graph
+  layers_pre_mp: 0
+  layers_post_mp: 3  # Not used when `gnn.head: san_graph`
+  dim_inner: 64  # `gt.dim_hidden` must match `gnn.dim_inner`
+  batchnorm: True
+  act: relu
+  dropout: 0.0
+  agg: mean
+  normalize_adj: False
+  num_layer_MPNN: 1
+  similarity_type: cos
+  inference_mode: original
+  mp_threshold: 0.0
+  force_undirected: False
+optim:
+  clip_grad_norm: True
+  optimizer: adamW
+  weight_decay: 1e-5
+  base_lr: 0.0001
+  max_epoch: 100
+  scheduler: cosine_with_warmup
+  num_warmup_epochs: 5
+#optim:
+#  clip_grad_norm: True
+#  optimizer: adamW
+#  weight_decay: 1e-5
+#  base_lr: 0.0001
+#  max_epoch: 100
+#  scheduler: reduce_on_plateau
+#  reduce_factor: 0.5
+#  schedule_patience: 5
+#  min_lr: 1e-6

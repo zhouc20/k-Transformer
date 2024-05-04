@@ -1,0 +1,98 @@
+out_dir: results
+metric_best: mae
+metric_agg: argmin
+#accelerator: 'cpu'
+wandb:
+  use: True
+  project: ZINC
+dataset:
+  format: PyG-ZINC
+  name: subset
+  task: graph
+  task_type: regression
+  transductive: False
+  node_encoder: True
+  node_encoder_name: TypeDictNode+StableExpressivePE+RWSE
+  node_encoder_num_types: 28
+  node_encoder_bn: False
+  edge_encoder: True
+  edge_encoder_name: TypeDictEdge
+  edge_encoder_num_types: 5
+  edge_encoder_bn: False
+prep:
+  exp: False
+  exp_deg: 3
+  use_exp_edges: False
+  add_edge_index: False
+  use_local_neighbors: True
+  num_virt_node: 6
+posenc_StableExpressivePE:
+  enable: True
+  model: DeepSet
+  dim_pe: 8
+  n_psi: 6
+  layers: 4
+  post_layers: 8
+  eigen:
+    max_freqs: 8
+  pass_as_var: True
+  psi_hidden_dim: 16
+  phi_hidden_dim: 64
+  phi_out_dim: 8
+posenc_RWSE:
+  enable: True
+  kernel:
+    times_func: range(1,21)
+  model: Linear
+  dim_pe: 16
+  raw_norm_type: BatchNorm
+posenc_EdgeRWSE:
+  enable: False
+  kernel:
+    times_func: range(1, 17)
+  model: Linear
+  layers: 1
+  bias: True
+  dim_pe: 16
+  directed_walk: False
+  internal_directed: False
+train:
+  mode: custom
+  batch_size: 128  # 32
+  eval_period: 1
+  ckpt_period: 100
+  ensemble_repeat: 1
+  ensemble_mode: none
+model:
+  type: kSimplicialTransformerSparse
+  loss_fun: l1
+  edge_decoding: dot
+  graph_pooling: add
+  simplex_pooling: all  # pooling over both 0-simplices and 1-sipmlices; alternative: 'node'
+gt:
+  layer_type: None+Exphormer  # CustomGatedGCN+Performer
+  layers: 10
+  n_heads: 4
+  dim_hidden: 96  # `gt.dim_hidden` must match `gnn.dim_inner`
+  dropout: 0.0
+  attn_dropout: 0.5
+  layer_norm: False
+  batch_norm: True
+gnn:
+  head: san_graph
+  layers_pre_mp: 0
+  layers_post_mp: 3  # Not used when `gnn.head: san_graph`
+  dim_inner: 96  # `gt.dim_hidden` must match `gnn.dim_inner`
+  batchnorm: True
+  act: relu
+  dropout: 0.0
+  agg: mean
+  normalize_adj: False
+optim:
+  clip_grad_norm: True
+  optimizer: adamW
+  weight_decay: 1e-5
+  base_lr: 0.001
+  max_epoch: 2000
+  scheduler: cosine_with_warmup
+  num_warmup_epochs: 50
